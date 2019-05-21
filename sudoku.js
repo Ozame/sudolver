@@ -95,9 +95,10 @@ function solvePuzzle() {
 
     let rows = extractSudoku();
     let justNumbers = rows.map( sub => sub.map( row => row.number));
-    console.log(justNumbers);
     //testValidityCheck(justNumbers);
 
+    let isBacktracking = false;
+    let first = new Date()
     let i = 0;
     while (i < rows.length) {
         let j = 0;
@@ -105,28 +106,33 @@ function solvePuzzle() {
             let cell = rows[i][j];
             if (!cell.immutable) {
                 
-                let candidate = 1;
+                let candidate = isBacktracking ? cell.number === NaN ? 1 : cell.number + 1 : 1;
                 let isValid = false;
-                
-                // There is problem with backtracking :/
-                while (candidate <= 9 && !isValid) {
+                let second = new Date();
+                if (second.getTime() - first.getTime() > 30000) {return;}
+                // there is a problem somwhere :/
+                while (candidate <= 9) {
                     isValid = checkValidity(justNumbers, candidate, i, j);
                     if (isValid) {
-                        console.log(candidate);
                         justNumbers[i][j] = candidate;
-                        cell.cellNumber = candidate;
+                        cell.number = candidate;
                         cell.cellTarget.textContent = candidate;
+                        isBacktracking = false;
                         break;
                     } else {
                         candidate++;
                     }
                 
                 }
-                if (!isValid) {
-                    if (0 < j) {
-                        j--;
+                if (!isValid) {     //backtracks if needed
+                    isBacktracking = true;
+                    justNumbers[i][j] = NaN;
+                    cell.number = NaN;
+                    cell.cellTarget.textContent = "";
+                    if (1 < j) {
+                        j -= 2;    
                     } else {
-                        i--;
+                        i -= 2;
                         break;
                     }
                 }   
