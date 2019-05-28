@@ -39,3 +39,7 @@ td:nth-child(3), td:nth-child(6)  {
 tr:nth-child(3), tr:nth-child(6) {
     border-bottom: 3px solid black;
 }
+
+.immutable {
+    color: rgb(28, 127, 184);
+}

@@ -16,11 +16,15 @@ function createPuzzle() {
 }
 
 function addControls() {
+
+    //Solve button
     let body = document.getElementsByTagName('body')[0];
     let sub = document.createElement('button');
     sub.onclick = solvePuzzle;
     sub.textContent = "Solve"
     body.insertBefore(sub, document.getElementsByTagName("main")[0]);
+
+    //Test button
     let test = document.createElement('button');
     test.onclick = createTestPuzzle;
     test.textContent = "Fill in test puzzle"
@@ -31,15 +35,15 @@ function addControls() {
 function createTestPuzzle() {
 
     let puzzle1 = [
-        ["", 8, "", 7, "", 1, "", 3, ""],
-        [4, "", 9, "", "", "", "", "", ""],
-        ["", 5, "", "", 6, "", 4, 1, 8],
-        [7, "", "", "", "", 9, "", "", ""],
-        [8, "", "", 6, 1, "", 5, "", ""],
-        ["", 3, 5, "", "", "", "", 2, 9],
-        ["", 6, "", 4, "", 7, "", 9, ""],
-        [1, "", "", "", "", 8, "", "", 4],
-        ["", 2, "", "", 5, "", "", 7, ""]
+        [8, "", "", "", "", "", "", "", ""],
+        ["", "", 3, 6, "", "", "", "", ""],
+        ["", 7, "", "", 9, "", 2, "", ""],
+        ["", 5, "", "", "", 7, "", "", ""],
+        ["", "", "", "", 4, 5, 7, "", ""],
+        ["", "", "", 1, "", "", "", 3, ""],
+        ["", "", 1, "", "", "", "", 6, 8],
+        ["", "", 8, 5, "", "", "", 1, ""],
+        ["", 9, "", "", "", "", 4, "", ""]
     ]
 
     fillWithPuzzle(puzzle1);
@@ -51,7 +55,11 @@ function fillWithPuzzle(puzzleAsList) {
     var arr = Array.prototype.slice.call( cells );
     for (let i = 0; i < puzzleAsList.length; i++) {
         for (let j = 0; j < puzzleAsList[i].length; j++) {
-            arr.shift().textContent = puzzleAsList[i][j];
+            let cell = arr.shift();
+            let content = puzzleAsList[i][j];
+            if (content) {cell.classList.add('immutable');}
+            cell.textContent = content;
+
             
         }
         
@@ -62,6 +70,7 @@ function fillWithPuzzle(puzzleAsList) {
 function updateCounter(e) {
     let cell = e.target;
     let currentNumber = parseInt(cell.textContent);
+    cell.classList.add('immutable');
     if (currentNumber == 9) {
         cell.textContent = "";
     } else if (currentNumber) {
@@ -90,7 +99,6 @@ function extractSudoku() {
 }
 
 
-
 function solvePuzzle() {
 
     let rows = extractSudoku();
@@ -98,46 +106,63 @@ function solvePuzzle() {
     //testValidityCheck(justNumbers);
 
     let isBacktracking = false;
-    let first = new Date()
+    let jumpedRowBack = false;
     let i = 0;
     while (i < rows.length) {
-        let j = 0;
-        while (j < rows[i].length) {
+        let j = jumpedRowBack ? 8 : 0;
+        jumpedRowBack = false;
+
+        while(j < rows[i].length) {
+            console.log(i + " " + j);
             let cell = rows[i][j];
+
             if (!cell.immutable) {
-                
                 let candidate = isBacktracking ? cell.number === NaN ? 1 : cell.number + 1 : 1;
                 let isValid = false;
-                let second = new Date();
-                if (second.getTime() - first.getTime() > 30000) {return;}
-                // there is a problem somwhere :/
                 while (candidate <= 9) {
                     isValid = checkValidity(justNumbers, candidate, i, j);
                     if (isValid) {
                         justNumbers[i][j] = candidate;
                         cell.number = candidate;
-                        cell.cellTarget.textContent = candidate;
+                        cell.cellTarget.textContent = candidate; 
                         isBacktracking = false;
                         break;
                     } else {
                         candidate++;
                     }
-                
                 }
-                if (!isValid) {     //backtracks if needed
-                    isBacktracking = true;
-                    justNumbers[i][j] = NaN;
-                    cell.number = NaN;
+
+                if (!isValid) {     // needs to backtrack
+                    
+                    // sets current cell to empty
+                    cell.number = NaN;              
                     cell.cellTarget.textContent = "";
-                    if (1 < j) {
-                        j -= 2;    
-                    } else {
+                    justNumbers[i][j] = NaN;
+                    isBacktracking = true;
+
+                    //Changes the indexes so that next handled cell is the previous one
+                    if (0 < j) {
+                        j -= 2;
+                    } else if (0 < i) {
                         i -= 2;
+                        jumpedRowBack = true;
                         break;
+                    } else {
+                        return;
                     }
-                }   
+                }
+            } else if (cell.immutable && isBacktracking) {  // if we're backtracking, we need to skip the immutable cells
+                if (0 < j) {
+                    j -= 2;
+                } else if (0 < i) {
+                    i -= 2;
+                    jumpedRowBack = true;
+                    break;
+                } else {
+                    return;
+                }
             }
-            j++;
+           j++; 
         }
         i++;
     }
@@ -192,5 +217,4 @@ function main() {
     addControls();
     
 }
-
 
