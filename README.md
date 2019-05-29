@@ -1,3 +1,3 @@
 # sudolver
 
-Something like a sudoku solver i dunno
+Standard 9x9 sudoku solver done using Javascript.
