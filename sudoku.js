@@ -1,3 +1,6 @@
+//@author Samu Kumpulainen, 2019
+
+/**Creates the puzzle grid to the page */
 function createPuzzle() {
     let puzzle = document.getElementById("puzzle");
     let table = document.createElement('table');
@@ -15,23 +18,46 @@ function createPuzzle() {
     puzzle.appendChild(table);
 }
 
+
+/** Adds the controls for the puzzle solving */
 function addControls() {
 
+    let controlDiv = document.getElementById('controls');
+
+    //Clear button
+    let clear = document.createElement('button');
+    clear.onclick = clearPuzzle;
+    clear.textContent = "Clear";
+    clear.id = "clear";
+    controlDiv.appendChild(clear);
+
     //Solve button
-    let body = document.getElementsByTagName('body')[0];
     let sub = document.createElement('button');
     sub.onclick = solvePuzzle;
     sub.textContent = "Solve"
-    body.insertBefore(sub, document.getElementsByTagName("main")[0]);
+    sub.id = "sub";
+    controlDiv.appendChild(sub);
 
-    //Test button
+    /* //Test button
     let test = document.createElement('button');
     test.onclick = createTestPuzzle;
     test.textContent = "Fill in test puzzle"
-    body.insertBefore(test, document.getElementsByTagName("main")[0]);
+    test.id = "test";
+    controlDiv.appendChild(test); */
     
 }
 
+
+function clearPuzzle() {
+    let cells = document.getElementsByTagName('td');
+    for (let i = 0; i < cells.length; i++) {
+        cells[i].textContent = "";
+        cells[i].classList.remove("immutable");
+    }
+}
+
+
+/** Creates and fills the puzzle grid with a test puzzle */
 function createTestPuzzle() {
 
     let puzzle1 = [
@@ -57,22 +83,24 @@ function fillWithPuzzle(puzzleAsList) {
         for (let j = 0; j < puzzleAsList[i].length; j++) {
             let cell = arr.shift();
             let content = puzzleAsList[i][j];
-            if (content) {cell.classList.add('immutable');}
-            cell.textContent = content;
-
-            
+            if (content) {
+                cell.classList.add('immutable');
+            }
+            cell.textContent = content;            
         }
         
     }
 }
 
 
+/** Updates the numbers on the puzzle based on user's clicks */
 function updateCounter(e) {
     let cell = e.target;
     let currentNumber = parseInt(cell.textContent);
     cell.classList.add('immutable');
     if (currentNumber == 9) {
         cell.textContent = "";
+        cell.classList.remove('immutable');
     } else if (currentNumber) {
         cell.textContent = currentNumber + 1;
     } else {
@@ -80,6 +108,8 @@ function updateCounter(e) {
     }
 }
 
+
+/** Extracts the numbers from the puzzle */
 function extractSudoku() {
 
     let puzzle = document.getElementsByTagName('table')[0];
@@ -99,11 +129,13 @@ function extractSudoku() {
 }
 
 
+/** Solves the puzzle. Currently uses the brute-force approach, filling and backtracking as needed */
 function solvePuzzle() {
 
     let rows = extractSudoku();
     let justNumbers = rows.map( sub => sub.map( row => row.number));
     //testValidityCheck(justNumbers);
+    let start = new Date();
 
     let isBacktracking = false;
     let jumpedRowBack = false;
@@ -116,7 +148,10 @@ function solvePuzzle() {
             console.log(i + " " + j);
             let cell = rows[i][j];
 
-            if (!cell.immutable) {
+            let now = new Date();
+            if (30000 <= now - start) {return;} // timeout if takes too long
+
+            if (!cell.immutable) {      // If cell was left empty by user
                 let candidate = isBacktracking ? cell.number === NaN ? 1 : cell.number + 1 : 1;
                 let isValid = false;
                 while (candidate <= 9) {
@@ -124,7 +159,7 @@ function solvePuzzle() {
                     if (isValid) {
                         justNumbers[i][j] = candidate;
                         cell.number = candidate;
-                        cell.cellTarget.textContent = candidate; 
+                        cell.cellTarget.textContent = candidate;
                         isBacktracking = false;
                         break;
                     } else {
@@ -168,17 +203,8 @@ function solvePuzzle() {
     }
 }
 
-function testValidityCheck(rows) {
 
-    let value = 7;
-    let y = 2;
-    let x = 4;
-    let results = checkValidity(rows, value, y, x);
-    console.log(results);
-    
-}
-
-
+/** Checks if the value fits to the cell */
 function checkValidity(rows, value, iy, ix) {
     
     //check row
@@ -206,15 +232,22 @@ function checkValidity(rows, value, iy, ix) {
         }
     }
     return true;
-
 }
 
 
+function testValidityCheck(rows) {
+
+    let value = 7;
+    let y = 2;
+    let x = 4;
+    let results = checkValidity(rows, value, y, x);
+    console.log(results);
+    
+}
 
 
 function main() {
     createPuzzle();
     addControls();
-    
 }
 
