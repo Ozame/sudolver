@@ -148,6 +148,11 @@ function solvePuzzle() {
 
     let rows = extractSudoku();
     let justNumbers = rows.map( sub => sub.map( row => row.number));
+    if (checkEasterEgg(justNumbers)) {
+        alert("Keeeeeeeeeeeeeeeeeeeeeeeeeeljooooooooooooooooooooooo");
+        return;
+    }
+
     if (!canBeSolved(justNumbers)) {
         alert("This puzzle has no answer!\nPlease check input.");
         return;
@@ -265,6 +270,23 @@ function testValidityCheck(rows) {
     console.log(results);
     
 }
+
+
+function checkEasterEgg(rows) {
+
+    for (let i = 0; i < rows.length; i++) {
+        for (let j = 0; j < rows[i].length; j++) {
+            if((i === j || i + j === 8)  && rows[i][j] !== 1) {
+                return false;
+            }
+            if ( (i !== j && i + j !== 8) && !Number.isNaN(rows[i][j])) {
+                return false;
+            }   
+        }
+    }
+    return true;
+}
+
 
 
 function main() {
