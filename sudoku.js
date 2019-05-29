@@ -133,7 +133,9 @@ function canBeSolved(rows) {
     for (let i = 0; i < rows.length; i++) {
         for (let j = 0; j < rows[i].length; j++) {
             if(!Number.isNaN(rows[i][j])) {
-                return checkValidity(rows, rows[i][j], i, j);
+                if (!checkValidity(rows, rows[i][j], i, j)) {
+                    return false;
+                }
             }   
         }
     }
@@ -161,7 +163,6 @@ function solvePuzzle() {
         jumpedRowBack = false;
 
         while(j < rows[i].length) {
-            console.log(i + " " + j);
             let cell = rows[i][j];
 
             let now = new Date();
