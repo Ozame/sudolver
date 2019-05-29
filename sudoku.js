@@ -43,8 +43,7 @@ function addControls() {
     test.onclick = createTestPuzzle;
     test.textContent = "Fill in test puzzle"
     test.id = "test";
-    controlDiv.appendChild(test); */
-    
+    controlDiv.appendChild(test);  */ 
 }
 
 
@@ -88,7 +87,6 @@ function fillWithPuzzle(puzzleAsList) {
             }
             cell.textContent = content;            
         }
-        
     }
 }
 
@@ -129,11 +127,29 @@ function extractSudoku() {
 }
 
 
+/** Checks if the given puzzle can be solved */
+function canBeSolved(rows) {
+
+    for (let i = 0; i < rows.length; i++) {
+        for (let j = 0; j < rows[i].length; j++) {
+            if(!Number.isNaN(rows[i][j])) {
+                return checkValidity(rows, rows[i][j], i, j);
+            }   
+        }
+    }
+    return true;
+}
+
+
 /** Solves the puzzle. Currently uses the brute-force approach, filling and backtracking as needed */
 function solvePuzzle() {
 
     let rows = extractSudoku();
     let justNumbers = rows.map( sub => sub.map( row => row.number));
+    if (!canBeSolved(justNumbers)) {
+        alert("This puzzle has no answer!\nPlease check input.");
+        return;
+    }
     //testValidityCheck(justNumbers);
     let start = new Date();
 
@@ -152,7 +168,7 @@ function solvePuzzle() {
             if (30000 <= now - start) {return;} // timeout if takes too long
 
             if (!cell.immutable) {      // If cell was left empty by user
-                let candidate = isBacktracking ? cell.number === NaN ? 1 : cell.number + 1 : 1;
+                let candidate = isBacktracking ? Number.isNaN(cell.number) ? 1 : cell.number + 1 : 1;
                 let isValid = false;
                 while (candidate <= 9) {
                     isValid = checkValidity(justNumbers, candidate, i, j);
@@ -208,15 +224,19 @@ function solvePuzzle() {
 function checkValidity(rows, value, iy, ix) {
     
     //check row
-    if (0 <= rows[iy].indexOf(value)) {
-        return false;
+    for (let columnIndex = 0; columnIndex < rows[iy].length; columnIndex++) {
+        if (rows[iy][columnIndex] === value && columnIndex != ix) {
+            return false;
+        }
     }
+
     //check column
-    for (let i = 0; i < rows.length; i++) {
-        if (rows[i][ix] === value) {
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+        if (rows[rowIndex][ix] === value && rowIndex != iy) {
             return false;
         }    
     } 
+
     //check small square
     let sx = Math.floor(ix / 3);
     let sy = Math.floor(iy / 3);
@@ -224,9 +244,9 @@ function checkValidity(rows, value, iy, ix) {
     let start_x = 3 * sx;
     let start_y = 3 * sy;
 
-    for (let i = start_y; i < start_y + 3; i++) {
-        for (let j = start_x; j < start_x + 3; j++) {
-            if (rows[i][j] === value) {
+    for (let rowIndex = start_y; rowIndex < start_y + 3; rowIndex++) {
+        for (let columnIndex = start_x; columnIndex < start_x + 3; columnIndex++) {
+            if (rows[rowIndex][columnIndex] === value && rowIndex != iy && columnIndex !=ix) {
                 return false;
             }
         }
